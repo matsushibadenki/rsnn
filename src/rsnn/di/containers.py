@@ -93,7 +93,10 @@ class ModelsContainer(containers.DeclarativeContainer):
         stdp_rule=core.stdp_rule,
         homeostasis_rule=core.homeostasis_rule,
         excitatory_ratio=config.ei_params.excitatory_ratio,
-
+        # 修正: 欠落していたパラメータと閉じる括弧を追加
+        inh_strength=config.ei_params.inh_strength,
+        k_winners=config.ei_params.k_winners
+    )
 
 class ExperimentContainer(containers.DeclarativeContainer):
     """実験関連（データ、評価）のコンテナ"""
