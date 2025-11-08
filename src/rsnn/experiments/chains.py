@@ -49,10 +49,15 @@ class ExperimentChains:
         sim_params = {'T': self.config['simulation_params']['T_poisson'],
                       'epochs': self.config['simulation_params']['epochs']}
         
+        # 修正: poisson_encoding に必要な 'dt' を渡す
+        poisson_params = {
+            'dt': self.config['simulation_params']['dt']
+        }
+        
         return service.run_experiment(
             rsnn_model=model,
             encoding_fn=encoder,
-            encoding_params={}, # Poissonは追加パラメータなし
+            encoding_params=poisson_params, # 修正: 以前は {} だった
             dataset_params=self.config['dataset_params'],
             sim_params=sim_params,
             seeds=[self.config['model_params']['rng_seed']] # 簡略化
@@ -85,10 +90,15 @@ class ExperimentChains:
         sim_params = {'T': self.config['simulation_params']['T_poisson'],
                       'epochs': self.config['simulation_params']['epochs']}
 
+        # 修正: poisson_encoding に必要な 'dt' を渡す
+        poisson_params = {
+            'dt': self.config['simulation_params']['dt']
+        }
+
         return service.run_experiment(
             rsnn_model=model,
             encoding_fn=encoder,
-            encoding_params={},
+            encoding_params=poisson_params, # 修正: 以前は {} だった
             dataset_params=self.config['dataset_params'],
             sim_params=sim_params,
             seeds=[self.config['model_params']['rng_seed']]

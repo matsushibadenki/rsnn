@@ -1,5 +1,5 @@
 {
-  "timestamp": 1762609703.9990752,
+  "timestamp": 1762610817.983663,
   "project_root": "/Users/Shared/Program/python310/rsnn",
   "python": "/Users/Shared/Program/python310/.venv/bin/python",
   "python_version": "3.10.18 (main, Jul 11 2025, 22:25:58) [Clang 20.1.4 ]",
@@ -42,20 +42,21 @@
   },
   "experiments": {
     "src_main_py": {
-      "ran": false,
+      "ran": true,
       "code": 0,
-      "files_created": false,
-      "error": "Process exited 0 but output files are missing."
+      "files_created": true
     }
   },
   "outputs": [
     {
       "name": "rsnn_summary_di_lc.json",
-      "found": false
+      "size": 2220,
+      "mtime": 1762610827.7574275
     },
     {
       "name": "README_rsnn_di_lc.md",
-      "found": false
+      "size": 1390,
+      "mtime": 1762610827.7577288
     }
   ]
 }
