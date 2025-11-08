@@ -1,8 +1,3 @@
-/*
-./config/experiment_params.json
-タイトル: 実験パラメータ設定
-機能説明: 実行するRSNN実験のハイパーパラメータや設定を定義するJSONファイル。
-*/
 {
   "dataset_params": {
     "n_train": 100,
