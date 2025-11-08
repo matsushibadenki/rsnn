@@ -72,14 +72,16 @@ class ExperimentService:
         # 今回は簡略化のため、注入された単一モデルを複数エポック実行する
         # (DIコンテナの設計上、モデルのシードは固定されているため、複数シード実行は擬似的)
         
-        print(f"Running experiment (Model: {rsnn_model.__class__.__name__}, Encoding: {encoding_fn.__name__}, Seed: {rsnn_model.rng.bit_generator.state['seed_seq']})...")
+        # 修正: rng.bit_generator.state['seed_seq'] を rsnn_model.rng_seed に変更
+        print(f"Running experiment (Model: {rsnn_model.__class__.__name__}, Encoding: {encoding_fn.__name__}, Seed: {rsnn_model.rng_seed})...")
         
         for seed_val in seeds:
             # 簡略化のため、DIコンテナが初期化したモデルのシードを無視し、
             # ここで指定されたシード（の最初の値）を使う（デモ用）
             # 実際には DI(seed) -> Model(seed) とすべき
-            if seed_val != rsnn_model.rng.bit_generator.state['seed_seq']:
-                 print(f"Warning: Running with model seed {rsnn_model.rng.bit_generator.state['seed_seq']}, not requested seed {seed_val}.")
+            # 修正: rng.bit_generator.state['seed_seq'] を rsnn_model.rng_seed に変更
+            if seed_val != rsnn_model.rng_seed:
+                 print(f"Warning: Running with model seed {rsnn_model.rng_seed}, not requested seed {seed_val}.")
             
             # 2. 訓練 (STDP)
             for ep in range(epochs):
