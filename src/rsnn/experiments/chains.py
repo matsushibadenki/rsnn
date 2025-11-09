@@ -6,6 +6,8 @@ from __future__ import annotations
 import datetime
 from typing import Dict, Any, List
 from langchain_core.runnables import RunnableLambda, RunnablePassthrough
+# 修正: Provider (Factory) を型ヒント用にインポート
+from dependency_injector import providers
 
 from ..di.containers import ApplicationContainer
 from ..core import encoding
@@ -13,11 +15,13 @@ from ..core import encoding
 # DIコンテナから必要なコンポーネントを取得するためのヘルパー関数群
 # (LangChainのRunnableLambdaから呼び出される)
 
-def _get_homeo_model(container: ApplicationContainer):
-    return container.models.rsnn_homeo()
+def _get_homeo_model_provider(container: ApplicationContainer) -> providers.Provider:
+    # 修正: .rsnn_homeo は Factory Provider を返す ( () を付けない)
+    return container.models.rsnn_homeo
 
-def _get_ei_model(container: ApplicationContainer):
-    return container.models.rsnn_ei()
+def _get_ei_model_provider(container: ApplicationContainer) -> providers.Provider:
+    # 修正: .rsnn_ei は Factory Provider を返す ( () を付けない)
+    return container.models.rsnn_ei
 
 def _get_poisson_encoder(container: ApplicationContainer):
     return container.core.poisson_encoder()
@@ -43,65 +47,73 @@ class ExperimentChains:
     def _run_homeo_poisson(self, input_dict: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Chain 1: Homeo + Poisson の実行"""
         service = _get_experiment_service(self.container)
-        model = _get_homeo_model(self.container)
+        model_provider = _get_homeo_model_provider(self.container)
         encoder = _get_poisson_encoder(self.container)
         
         sim_params = {'T': self.config['simulation_params']['T_poisson'],
                       'epochs': self.config['simulation_params']['epochs']}
         
-        # 修正: poisson_encoding に必要な 'dt' を渡す
         poisson_params = {
             'dt': self.config['simulation_params']['dt']
         }
         
+        # 修正: configから複数シードリストを取得
+        seeds = self.config['simulation_params'].get('run_seeds', 
+                                                    [self.config['model_params']['rng_seed']])
+        
         return service.run_experiment(
-            rsnn_model=model,
+            model_provider=model_provider, # 修正: インスタンスではなくFactoryを渡す
             encoding_fn=encoder,
-            encoding_params=poisson_params, # 修正: 以前は {} だった
+            encoding_params=poisson_params,
             dataset_params=self.config['dataset_params'],
             sim_params=sim_params,
-            seeds=[self.config['model_params']['rng_seed']] # 簡略化
+            seeds=seeds # 修正: 複数シードリストを渡す
         )
 
     def _run_homeo_latency(self, input_dict: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Chain 2: Homeo + Latency の実行"""
         service = _get_experiment_service(self.container)
-        model = _get_homeo_model(self.container) # Homeoモデルを再利用
+        model_provider = _get_homeo_model_provider(self.container) # Homeo Factory
         encoder = _get_latency_encoder(self.container)
         
         sim_params = {'T': self.config['simulation_params']['T_latency'],
                       'epochs': self.config['simulation_params']['epochs']}
         
+        seeds = self.config['simulation_params'].get('run_seeds', 
+                                                    [self.config['model_params']['rng_seed']])
+
         return service.run_experiment(
-            rsnn_model=model,
+            model_provider=model_provider, # 修正: Factoryを渡す
             encoding_fn=encoder,
             encoding_params=self.config['latency_params'],
             dataset_params=self.config['dataset_params'],
             sim_params=sim_params,
-            seeds=[self.config['model_params']['rng_seed']]
+            seeds=seeds
         )
 
     def _run_ei_poisson(self, input_dict: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Chain 3: EI + Poisson の実行"""
         service = _get_experiment_service(self.container)
-        model = _get_ei_model(self.container) # EIモデルを使用
+        model_provider = _get_ei_model_provider(self.container) # EI Factory
         encoder = _get_poisson_encoder(self.container)
 
         sim_params = {'T': self.config['simulation_params']['T_poisson'],
                       'epochs': self.config['simulation_params']['epochs']}
 
-        # 修正: poisson_encoding に必要な 'dt' を渡す
         poisson_params = {
             'dt': self.config['simulation_params']['dt']
         }
+        
+        seeds = self.config['simulation_params'].get('run_seeds', 
+                                                    [self.config['model_params']['rng_seed']])
 
         return service.run_experiment(
-            rsnn_model=model,
+            model_provider=model_provider, # 修正: Factoryを渡す
             encoding_fn=encoder,
-            encoding_params=poisson_params, # 修正: 以前は {} だった
+            encoding_params=poisson_params,
             dataset_params=self.config['dataset_params'],
             sim_params=sim_params,
-            seeds=[self.config['model_params']['rng_seed']]
+            seeds=seeds
         )
 
     def _generate_report(self, results: Dict[str, Any]) -> Dict[str, Any]:
@@ -126,9 +138,6 @@ class ExperimentChains:
         入力: config (Dict)
         出力: 最終サマリ (Dict)
         """
-        
-        # RunnablePassthroughは入力をそのまま後続に渡しつつ、
-        # 並列実行（RunnableParallel）のキーとして結果を保持するために使います。
         
         chain = RunnablePassthrough.assign(
             homeo_poisson_results=RunnableLambda(self._run_homeo_poisson),
