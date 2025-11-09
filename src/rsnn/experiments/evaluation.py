@@ -3,7 +3,7 @@
 # 機能説明: 隠れ層の活動に基づき、Ridge回帰（線形リードアウト）を訓練・評価します。
 from __future__ import annotations
 import numpy as np
-from sklearn.linear_model import Ridge
+from sklearn.linear_model import Ridge # type: ignore[import-untyped]
 from typing import Tuple
 
 class ReadoutEvaluator:
