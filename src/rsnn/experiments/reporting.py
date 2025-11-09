@@ -44,21 +44,24 @@ class ResultReporter:
             lines.append(f"**実行日時**: {summary_data['run_timestamp']}\n")
             
         lines.append("## 主な結果\n")
+        
+        # 計測するヘッダー (Objective.md フェーズ2.4対応)
+        result_headers = ['seed', 'acc', 'mean_rate', 'mean_total_spikes']
 
         homeo_results = summary_data.get('homeo_poisson_results', [])
         if homeo_results:
             self._append_results_table(lines, "Homeo (Poisson)", homeo_results, 
-                                       ['seed', 'acc', 'mean_rate'])
+                                       result_headers)
 
         latency_results = summary_data.get('homeo_latency_results', [])
         if latency_results:
             self._append_results_table(lines, "Homeo (Latency)", latency_results, 
-                                       ['seed', 'acc', 'mean_rate'])
+                                       result_headers)
 
         ei_results = summary_data.get('ei_poisson_results', [])
         if ei_results:
             self._append_results_table(lines, "E/I (Poisson)", ei_results,
-                                       ['seed', 'acc', 'mean_rate'])
+                                       result_headers)
 
         lines.append("\n## パラメータ概要\n")
         lines.append("```json")
@@ -87,9 +90,13 @@ class ResultReporter:
         for res in results:
             cols = []
             for h in headers:
-                val = res.get(h)
+                val = res.get(h) # 存在しない場合 (古い実行結果など) は None
                 if isinstance(val, float):
+                    # mean_total_spikes は小数点以下が必要ない場合もあるが、統一
                     cols.append(f"{val:.4f}")
+                elif val is None:
+                    cols.append("N/A") # ヘッダーにあってもデータがない場合
                 else:
                     cols.append(str(val))
             lines.append(f"| {' | '.join(cols)} |")
+}
