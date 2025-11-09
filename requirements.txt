@@ -2,3 +2,5 @@ numpy<2.0
 scikit-learn
 matplotlib
 pandas
+torch
+torchvision
