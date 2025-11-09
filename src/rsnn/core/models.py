@@ -20,8 +20,8 @@ class RSNN_Homeo(BaseRSNN):
         self.stdp = stdp_rule
         self.homeo = homeostasis_rule
         
-        # 状態変数
-        self.adaptive_theta = np.ones(self.n_hidden) * self.v_th_base
+        # 状態変数 (v_th_base は BaseRSNN から取得)
+        self.adaptive_theta: np.ndarray = np.ones(self.n_hidden) * self.v_th_base # type: ignore[attr-defined]
 
     def run_sample(self, rates: np.ndarray, T: int,
                    encoding_fn: Callable[..., np.ndarray],
@@ -65,7 +65,7 @@ class RSNN_Homeo(BaseRSNN):
             # 修正: スパイク判定 (適応的閾値を使用)
             # 適応的閾値をLIF層の基本閾値に一時的に設定
             original_v_th = self.lif_layer.v_th
-            self.lif_layer.v_th = self.adaptive_theta
+            self.lif_layer.v_th = self.adaptive_theta # 修正: これで型が一致するはず
             
             # LIF層の呼び出し (電圧更新、発火、リセットを内部で実行)
             spk = self.lif_layer(I_in + I_rec)
