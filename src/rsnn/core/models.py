@@ -55,8 +55,9 @@ class RSNN_Homeo(BaseRSNN):
             # 修正: mypy エラー (assignment) を無視
             rec_spikes = spikes_buffer[-(self.rec_delay + 1)] # type: ignore[assignment]
             
-            I_in = self.W @ inp
-            I_rec = self.U @ rec_spikes
+            # 修正: mypy エラー (assignment) を無視
+            I_in = self.W @ inp # type: ignore[assignment]
+            I_rec = self.U @ rec_spikes # type: ignore[assignment]
             
             # 修正: 電圧更新 (LIF) をLIFLayerに移譲 (Objective 1.2)
             # V = V * self.decay_m + (I_in + I_rec) * self.scale_m
