@@ -33,7 +33,7 @@ class BaseRSNN(ABC):
         )
         
         # 修正: v_th_base などのパラメータをLIFLayerから取得
-        self.v_th_base = self.lif_layer.v_th
+        self.v_th_base = self.lif_layer.v_th_base # 修正: v_th -> v_th_base
         self.v_reset = self.lif_layer.v_reset
         
         # 修正: 状態変数を BaseRSNN から削除 (LIFLayerに移譲)
