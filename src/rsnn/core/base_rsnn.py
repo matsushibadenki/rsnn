@@ -5,7 +5,7 @@
 from __future__ import annotations
 import numpy as np
 from abc import ABC, abstractmethod
-from typing import Callable
+from typing import Callable, Tuple
 
 class BaseRSNN(ABC):
     """RSNNモデルの抽象基底クラス"""
@@ -58,9 +58,9 @@ class BaseRSNN(ABC):
 
     def collect_hidden_activity(self, samples_rates: np.ndarray, T: int,
                                 encoding_fn: Callable[..., np.ndarray],
-                                encoding_params: dict) -> np.ndarray:
+                                encoding_params: dict) -> Tuple[np.ndarray, np.ndarray]:
         """
-        複数のサンプルを実行し、隠れ層の平均発火率を収集します。
+        複数のサンプルを実行し、隠れ層の平均発火率と総スパイク数を収集します。
         
         Args:
             samples_rates (np.ndarray): 入力レート行列 (n_samples, n_input)
@@ -69,15 +69,21 @@ class BaseRSNN(ABC):
             encoding_params (dict): エンコーディング関数への引数
             
         Returns:
-            np.ndarray: 平均発火率行列 (n_samples, n_hidden)
+            Tuple[np.ndarray, np.ndarray]: 
+                (平均発火率行列 (n_samples, n_hidden), 
+                 サンプル毎の総スパイク数 (n_samples,))
         """
         n_samples = samples_rates.shape[0]
         hidden_activity = np.zeros((n_samples, self.n_hidden))
+        total_spikes_per_sample = np.zeros(n_samples)
         
         for i in range(n_samples):
             # STDP学習はオフにして実行
             rec = self.run_sample(samples_rates[i], T, encoding_fn, encoding_params, train_stdp=False)
             # Tで割って平均発火率（または総スパイク数/T）を計算
             hidden_activity[i] = rec.sum(axis=0) / T
+            # サンプルあたりの総スパイク数
+            total_spikes_per_sample[i] = rec.sum()
             
-        return hidden_activity
+        return hidden_activity, total_spikes_per_sample
+}
