@@ -37,13 +37,17 @@ class LIFLayer(BaseLayer):
                  shape: tuple[int, ...], 
                  dt: float, 
                  tau_m: float, 
-                 v_th: float, 
+                 v_th: float, # 修正: 初期値はfloat
                  v_reset: float):
         
         self.shape = shape
         self.dt = dt
         self.tau_m = tau_m
-        self.v_th = v_th
+        
+        # 修正: v_th を適応的 (ndarray) も許容するように変更
+        self.v_th_base: float | np.ndarray = v_th
+        self.v_th: float | np.ndarray = v_th_base 
+        
         self.v_reset = v_reset
         
         # 電圧減衰と入力スケールの係数
@@ -70,7 +74,7 @@ class LIFLayer(BaseLayer):
         # 1. 電圧更新 (LIF)
         self.V = self.V * self.decay_m + I_in * self.scale_m
         
-        # 2. スパイク判定
+        # 2. スパイク判定 (v_thがfloatでもndarrayでも動作)
         self.spikes = (self.V >= self.v_th).astype(float)
         
         # 3. リセット
@@ -79,6 +83,8 @@ class LIFLayer(BaseLayer):
         return self.spikes
 
     def reset(self):
-        """電圧とスパイクをリセットします。"""
+        """電圧とスパイクをリセットし、閾値をベース値に戻します。"""
         self.V = np.zeros(self.shape)
         self.spikes = np.zeros(self.shape)
+        # 修正: 閾値をベース値に戻す
+        self.v_th = self.v_th_base
