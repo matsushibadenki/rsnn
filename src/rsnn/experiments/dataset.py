@@ -4,7 +4,7 @@
 #           また、CIFAR-10データセットをダウンロードし、Numpy形式で提供します。
 from __future__ import annotations
 import numpy as np
-from typing import Tuple, Optional
+from typing import Tuple, Optional, Any # 修正: Any をインポート
 import os # 修正: osモジュールをインポート
 
 # --- 修正: CIFAR-10対応のためのインポート ---
@@ -16,11 +16,10 @@ try:
 except ImportError:
     TORCH_AVAILABLE = False
     print("Warning: torchvision not installed. CIFAR10Loader will not be available.")
-    # mypyのためのダミー定義
-    class DummyModule: pass
-    torch = DummyModule()
-    torchvision = DummyModule()
-    transforms = DummyModule()
+    # 修正: mypyのためのダミー定義を Any に変更
+    torch: Any = None
+    torchvision: Any = None
+    transforms: Any = None
 # --- 修正ここまで ---
 
 
