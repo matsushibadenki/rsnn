@@ -99,4 +99,3 @@ class ResultReporter:
                 else:
                     cols.append(str(val))
             lines.append(f"| {' | '.join(cols)} |")
-}
