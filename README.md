@@ -1,4 +1,4 @@
-# **RSNN プロジェクト**
+# **L-RSNN プロジェクト**
 
 このプロジェクトは、既存のRSNN（Recurrent Spiking Neural Network）の実験コード（STDP、Homeostasis、E/I分離、Latency符号化など）を、依存性注入（DI）コンテナとLangChain（LCEL）を使用して再構築したものです。
 
