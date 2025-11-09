@@ -53,7 +53,7 @@ class ExperimentService:
                                 本来はここでシード毎にモデルを再生成すべき)
 
         Returns:
-            List[Dict[str, Any]]: 各シードの結果（acc, mean_rate）
+            List[Dict[str, Any]]: 各シードの結果（acc, mean_rate, mean_total_spikes）
         """
         
         # 1. データのロード
@@ -94,10 +94,10 @@ class ExperimentService:
             
             # 3. 隠れ層の活動を収集
             print("  Collecting hidden activity...")
-            H_train = rsnn_model.collect_hidden_activity(
+            H_train, _ = rsnn_model.collect_hidden_activity(
                 self.train_rates, T, encoding_fn, encoding_params
             )
-            H_test = rsnn_model.collect_hidden_activity(
+            H_test, test_total_spikes = rsnn_model.collect_hidden_activity(
                 self.test_rates, T, encoding_fn, encoding_params
             )
             
@@ -106,9 +106,18 @@ class ExperimentService:
             acc, _ = self.evaluator.evaluate(H_test, self.test_labels)
             
             mean_rate = float(H_test.mean())
-            results.append({'seed': seed_val, 'acc': acc, 'mean_rate': mean_rate})
+            # Objective.md (フェーズ2.4) に基づき、推論1回あたりの平均総スパイク数を計算
+            mean_total_spikes = float(test_total_spikes.mean())
+
+            results.append({
+                'seed': seed_val, 
+                'acc': acc, 
+                'mean_rate': mean_rate,
+                'mean_total_spikes': mean_total_spikes # 新しいメトリクス
+                })
             
             # シードが1つでも結果を返す（簡略化のため）
             break 
             
         return results
+}
