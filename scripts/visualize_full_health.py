@@ -6,6 +6,7 @@ Adapted from rsnn_restructured_C.
 import json
 import matplotlib.pyplot as plt
 from pathlib import Path
+import sys # 修正: sysをインポート
 
 # プロジェクトルート基準で health_report.json を読み込む
 # (このスクリプトは scripts/ にある想定)
