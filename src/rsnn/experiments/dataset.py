@@ -4,16 +4,10 @@
 #           また、CIFAR-10データセットをダウンロードし、Numpy形式で提供します。
 from __future__ import annotations
 import numpy as np
-from typing import Tuple, Optional, Any # 修正: Any をインポート
+from typing import Tuple, Optional, Any
 import os 
 
 # --- 修正: CIFAR-10対応のためのインポート ---
-
-# 修正: mypyのために、先に Any で定義
-torch: Any = None
-torchvision: Any = None
-transforms: Any = None
-TORCH_AVAILABLE = False
 
 try:
     import torch # type: ignore[import-untyped]
@@ -22,7 +16,11 @@ try:
     TORCH_AVAILABLE = True
 except ImportError:
     print("Warning: torchvision not installed. CIFAR10Loader will not be available.")
-    pass # 変数は既に None (Any) として定義されている
+    TORCH_AVAILABLE = False
+    # 修正: インポート失敗時 (exceptブロック内) で Any を定義
+    torch: Any = None
+    torchvision: Any = None
+    transforms: Any = None
 # --- 修正ここまで ---
 
 
